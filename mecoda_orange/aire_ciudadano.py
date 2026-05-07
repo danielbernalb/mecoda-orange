@@ -17,17 +17,10 @@ selected_cols = [
     "PM251",
     "PM252",
     "PM1",
-    "CO2",
     "VOC",
     "NOx",
     "Humidity",
     "Temperature",
-    "Noise",
-    "NoisePeak",
-    "RSSI",
-    "Latitude",
-    "Longitude",
-    "InOut",
 ]
 
 
@@ -84,19 +77,28 @@ def get_data(url, selected_cols):
 
 
 # function to get wide table
+# function to get wide table
 def _wide_table(df, selected_cols):
     df_result = pd.pivot(
-        df, index=["station", "date", "time"], columns="metric_name", values="value"
-    ).reset_index()
+        df, 
+        index=['station', 'date', 'time'], 
+        columns='metric_name', 
+        values='value'
+        ).reset_index()
 
-    df_result = df_result[["station", "date", "time"] + selected_cols].reset_index(
-        drop=True
-    )
+    # SOLUCIÓN: Iterar sobre selected_cols y crear las que falten con valores NaN
+    for col in selected_cols:
+        if col not in df_result.columns:
+            df_result[col] = np.nan
+
+    # Ahora es seguro hacer el filtro porque garantizamos que todas las columnas existen
+    df_result = df_result[
+        ['station', 'date', 'time'] + selected_cols
+        ].reset_index(drop=True)
 
     df_result.columns.name = ""
 
     return df_result
-
 
 # constructor of the step value for time range queries
 def _get_step(number, choice):
